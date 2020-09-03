@@ -1,0 +1,85 @@
+---
+title: "ESDprojectNo.1"
+author: "Jaeyuel Park"
+date: '2020 9 1 '
+output: html_document
+---
+## Get the data
+
+Download file from the following [link](https://d396qusza40orc.cloudfront.net/exdata%2Fdata%2Fhousehold_power_consumption.zip)
+
+
+## Data Processing
+```{r read, echo = TRUE}
+dat <- read.table("household_power_consumption.txt",sep = ";", header = TRUE)
+```
+
+First, need to see how data is composed
+```{r skimming through data,echo = TRUE}
+head(dat)
+summary(dat)
+```
+
+ By doing so, we could see that the date and time are not in POSXICT, but character. So we need to put a little bit of change here using lubridate package. Also we need to change character into numerics for other columns.
+ 
+```{r transforming data, echo= TRUE}
+library(lubridate)
+dat$Date<-dmy(dat$Date)
+class(dat$Date)
+```
+
+ Now as mentioned in the readme of the assignment, we only need data from the dates 2007-02-01 and 2007-02-02. So it would be easier if we subset the data.
+ 
+```{r subsetting data, echo = TRUE}
+dat1 <- subset(dat, Date == "2007-02-01"| Date == "2007-02-02")
+for (i in 3:9){
+  dat1[,i] <- as.numeric(dat1[,i])
+}
+```
+ 
+ 
+## Building figures
+
+# figure 1
+
+ We could see that it's histogram with Global Active Power on x-axis with the title "Global Active Power"
+
+```{r figure1, echo = TRUE}
+hist(dat1$Global_active_power, main= "Global Active Power", xlab= "Global Active Power(kilowatts)",col = "red")
+```
+
+# figure 2
+
+ We need to create another column, date and time merged. 
+```{r Datetime, echo = TRUE}
+dat1$Datetime <- ymd_hms(paste(dat1$Date, dat1$Time))
+```
+ Now we could create a figure.
+
+```{r figure2, echo = TRUE}
+with(dat1, plot(Datetime, Global_active_power, type = "l", xlab = "", ylab = "Global Active Power(kilowatts)"))
+```
+
+# figure 3
+
+```{r figure3, echo = TRUE}
+with(dat1, plot(Datetime, Sub_metering_1, type = 'l',xlab = "",ylab = "Energy sub metering"))
+lines(Sub_metering_2~Datetime, dat1, col = "red")
+lines(Sub_metering_3~Datetime, dat1, col = "blue")
+legend("topright", col = c("black", "red", "blue"), lwd=2 ,legend = c("Sub_metering_1","Sub_metering_2","Sub_metering_3"))
+```
+
+#figure 4
+
+```{r figure4, echo = TRUE}
+par(mfrow =c(2,2))
+with(dat1, plot(Datetime, Global_active_power, type= 'l'))
+with(dat1, plot(Datetime, Voltage, type= 'l'))
+with(dat1, plot(Datetime, Sub_metering_1, type = 'l',xlab = "",ylab = "Energy sub metering"))
+lines(Sub_metering_2~Datetime, dat1, col = "red")
+lines(Sub_metering_3~Datetime, dat1, col = "blue")
+legend("topright", col = c("black", "red", "blue"), lty =1, cex = 0.5 ,lwd=2 , bty = "n", legend = c("Sub_metering_1","Sub_metering_2","Sub_metering_3"))
+with(dat1, plot(Datetime, Global_reactive_power, type = 'l'))
+```
+
+```
